@@ -12,7 +12,7 @@ dependencies:
   thinking_orbs_flutter: ^1.0.0
   shared_preferences: ^2.2.2
   http: ^1.1.0
-  speech_to_text: ^6.6.0
+  speech_to_text: ^7.4.0
   flutter_tts: ^4.0.2
 
 dev_dependencies:
