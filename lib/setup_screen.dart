@@ -1,121 +1,61 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 import 'main_screen.dart';
 
 class SetupScreen extends StatefulWidget {
   const SetupScreen({super.key});
-
   @override
   State<SetupScreen> createState() => _SetupScreenState();
 }
 
 class _SetupScreenState extends State<SetupScreen> {
-  final _apiKeyController = TextEditingController();
-  bool _isSaving = false;
+  final _controller = TextEditingController();
 
-  @override
-  void dispose() {
-    _apiKeyController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _saveApiKey() async {
-    final apiKey = _apiKeyController.text.trim();
-
-    if (apiKey.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Enter your OpenRouter API key.')),
-      );
-      return;
-    }
-
-    setState(() => _isSaving = true);
-
-    try {
-      final preferences = await SharedPreferences.getInstance();
-      await preferences.setString('openrouter_api_key', apiKey);
-
-      if (!mounted) return;
-
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute<void>(
-          builder: (_) => const MainScreen(),
-        ),
-      );
-    } catch (_) {
-      if (!mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Could not save your API key.')),
-      );
-      setState(() => _isSaving = false);
+  Future<void> _save() async {
+    final key = _controller.text.trim();
+    if (key.isEmpty) return;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('openrouter_api_key', key);
+    if (mounted) {
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const MainScreen()));
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 440),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const Icon(
-                    Icons.graphic_eq,
-                    size: 64,
-                    color: Colors.white,
-                  ),
-                  const SizedBox(height: 24),
-                  Text(
-                    'Set up Silly',
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.headlineMedium,
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    'Enter your OpenRouter API key to get started.',
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          color: Colors.white70,
-                        ),
-                  ),
-                  const SizedBox(height: 28),
-                  TextField(
-                    controller: _apiKeyController,
-                    obscureText: true,
-                    autocorrect: false,
-                    enableSuggestions: false,
-                    keyboardType: TextInputType.visiblePassword,
-                    decoration: const InputDecoration(
-                      labelText: 'OpenRouter API key',
-                      hintText: 'sk-or-...',
-                      border: OutlineInputBorder(),
-                    ),
-                    onSubmitted: (_) => _saveApiKey(),
-                  ),
-                  const SizedBox(height: 20),
-                  FilledButton(
-                    onPressed: _isSaving ? null : _saveApiKey,
-                    child: _isSaving
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                            ),
-                          )
-                        : const Text('Save and continue'),
-                  ),
-                ],
+      body: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Text('Welcome to Silly', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white)),
+            const SizedBox(height: 12),
+            const Text('Enter your OpenRouter API Key', style: TextStyle(color: Colors.grey)),
+            const SizedBox(height: 24),
+            TextField(
+              controller: _controller,
+              obscureText: true,
+              style: const TextStyle(color: Colors.white),
+              decoration: InputDecoration(
+                hintText: 'sk-or-v1-...',
+                hintStyle: const TextStyle(color: Colors.grey),
+                filled: true,
+                fillColor: Colors.grey[900],
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
               ),
             ),
-          ),
+            const SizedBox(height: 24),
+            ElevatedButton(
+              onPressed: _save,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blueAccent,
+                padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 16),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              ),
+              child: const Text('Save & Start', style: TextStyle(fontSize: 18, color: Colors.white)),
+            ),
+          ],
         ),
       ),
     );
