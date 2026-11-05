@@ -1,13 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-import 'main_screen.dart';
 import 'setup_screen.dart';
+import 'main_screen.dart';
 
-void main() {
-  WidgetsFlutterBinding.ensureInitialized();
-  runApp(const SillyApp());
-}
+void main() => runApp(const SillyApp());
 
 class SillyApp extends StatelessWidget {
   const SillyApp({super.key});
@@ -17,32 +13,18 @@ class SillyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Silly',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        brightness: Brightness.dark,
+      theme: ThemeData.dark().copyWith(
         scaffoldBackgroundColor: Colors.black,
-        colorScheme: const ColorScheme.dark(
-          surface: Colors.black,
-          primary: Colors.white,
-        ),
-        useMaterial3: true,
       ),
       home: FutureBuilder<SharedPreferences>(
         future: SharedPreferences.getInstance(),
         builder: (context, snapshot) {
-          if (snapshot.connectionState != ConnectionState.done) {
-            return const Scaffold(
-              body: Center(
-                child: CircularProgressIndicator(),
-              ),
-            );
+          if (!snapshot.hasData) {
+            return const Scaffold(body: Center(child: CircularProgressIndicator()));
           }
-
-          final apiKey = snapshot.data?.getString('openrouter_api_key');
-          if (apiKey != null && apiKey.trim().isNotEmpty) {
-            return const MainScreen();
-          }
-
-          return const SetupScreen();
+          final prefs = snapshot.data!;
+          final key = prefs.getString('openrouter_api_key');
+          return (key != null && key.isNotEmpty) ? const MainScreen() : const SetupScreen();
         },
       ),
     );
